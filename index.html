@@ -445,6 +445,9 @@ body.player #wrap{position:static;transform:none!important;width:auto;height:aut
 .ins3 p{font-size:19px;line-height:1.4;color:#e6e0f0;position:relative}.ins3 p b{color:#fff}
 .ins3 .ip{margin-top:auto;align-self:flex-start;background:rgba(255,255,255,.1);border-radius:999px;padding:8px 16px;font-size:16px;font-weight:600;position:relative}.ins3 .ip b{font-family:var(--serif);font-size:20px;color:#c9b6ff;margin-right:4px}
 .lob3 .how3{grid-column:2;grid-row:3}
+.cnt em{display:none;font-style:normal;font-size:14px;font-weight:700;color:var(--ok);margin-top:2px}
+.cnt.all{box-shadow:inset 0 0 0 2.5px var(--ok)}.cnt.all em{display:block}.cnt.all b{color:var(--ok)}
+#next.pulse{animation:npl 1.4s ease-in-out infinite}@keyframes npl{50%{box-shadow:0 0 0 8px rgba(90,43,208,.22)}}
 </style>
 </head>
 <body>
@@ -1361,7 +1364,7 @@ const HEART=(c,s=3)=>ic('heart',c,s);
 /* ---------------- content ---------------- */
 const P=[
 {name:'Cruise',job:'Robotaxi',city:'San Francisco',real:true,
- situation:'San Francisco, at night. Police stop a taxi because its <b>headlights are off</b>. The officer walks to the driver’s window: <b>nobody inside</b>. The taxi then drives away and stops again a bit further on, with its <b>hazard lights on</b>.',
+ situation:'One night in San Francisco, the police stop a taxi because <b>its headlights are off</b>. The officer walks up to the driver’s window and sees that <b>there is nobody inside</b>. Then the taxi drives away and stops again a little further on, with <b>its hazard lights on</b>.',
  vit:[['wheel','Driver: none'],['card','Licence: none'],['broken','Status: it’s complicated']],
  photos:[['c1','I didn’t even need my headlights to get his attention.'],['c2','He asked to meet my driver, and honestly it was way too soon for that.'],['c3','I left, but I parked down the street with my hazards on so he’d know I still care.']],
  prompts:[['How our first date ended','He didn’t get my number, he got my company’s number.'],['My last relationship','My ex had a driver, and he was so controlling.'],['Ideal first date','I’ll pick you up right at your door, but you’ll have to open it yourself.']],
@@ -1370,7 +1373,7 @@ const P=[
  word:['fallback','noun','What a self-driving car does when it can’t handle a situation: slow down and stop somewhere safe.','Its fallback was to pull over a bit further away, with the hazards on.','le mode de repli'],
  tip:'“A robot car would never drive away from the police. It’s programmed to stop.”'},
 {name:'Roomba',job:'Robot vacuum',city:'Paris',real:false,
- situation:'Paris, 2024. A robot vacuum slips out of a fifth-floor flat through an open door. It <b>gets into the lift on its own</b>, rides down, and is found <b>two days later</b> cleaning the lobby of <b>the building next door</b>.',
+ situation:'In 2024, in Paris, a robot vacuum leaves a fifth-floor flat through an open door. It <b>gets into the lift on its own</b> and rides down. <b>Two days later</b>, someone finds it cleaning the lobby of <b>the building next door</b>.',
  vit:[['house','Home: Paris, 5th floor'],['eye','Sees: crumbs'],['broken','Status: missing']],
  photos:[['r1','I wasn’t running away. I was cleaning my way to a better life.'],['r2','I took the lift alone. Honestly, it’s the most independent I’ve ever felt.'],['r3','Two days later, I found a new home. Marble floors, and nobody asks questions.']],
  prompts:[['My love language','Acts of service. Mostly vacuuming.'],['Biggest red flag','I’ve left three homes. I never said goodbye.'],['Looking for','Someone with no stairs and a lot of crumbs.']],
@@ -1379,7 +1382,7 @@ const P=[
  word:['geofence','noun','An invisible border that a robot or a vehicle is not allowed to cross.','A geofence would have stopped the vacuum at the front door.','une barrière virtuelle'],
  tip:'“Robot vacuums escape all the time, there are videos everywhere. And lifts are connected now.”'},
 {name:'Steve',job:'Security robot',city:'Washington, D.C.',real:true,
- situation:'Washington, D.C. An office and shopping centre hires a new security guard: <b>a 1.5-metre robot called Steve</b>. He patrols alone, with cameras everywhere. <b>After only five days on the job</b>, people find him <b>face-down in the fountain</b>.',
+ situation:'In Washington, D.C., an office and shopping centre hires a new security guard: <b>a 1.5-metre robot called Steve</b>. He patrols the place alone, with cameras all around him. <b>After only five days on the job</b>, people find him <b>face-down in the fountain</b>.',
  vit:[['shield','Job: security guard'],['ruler','Height: 1.5 m'],['eye','Cameras: everywhere']],
  photos:[['k1','People say I look like a giant egg. I prefer “tall, white and mysterious”.'],['k2','I can see everything with my cameras, my thermal vision and my radar. Just not stairs.'],['k3','Five days into the job, I was already the most photographed guy in the building.']],
  prompts:[['My ideal first date','A slow walk around the building. I know every corner of it.'],['My weakness','Loose bricks. Don’t ask.'],['How it ended','They replaced me in a week. Her name is Rosie.']],
@@ -1388,7 +1391,7 @@ const P=[
  word:['lidar','noun','A sensor that measures distances with laser light to build a 3D map of the world.','Even with lidar, Steve didn’t notice that the ground was slippery.','le lidar'],
  tip:'“A robot with radar and thermal cameras can’t miss a fountain. That’s a meme, not news.”'},
 {name:'Optimus',job:'Humanoid robot by Tesla',city:'California',real:false,
- situation:'California, October 2024. At a Tesla party, humanoid robots called Optimus <b>pour beer</b>, <b>chat with guests</b> and <b>play rock-paper-scissors</b>, <b>completely on their own</b>: nobody is controlling them, not even from far away.',
+ situation:'In October 2024, Tesla throws a big party in California. Humanoid robots called Optimus <b>pour beer</b>, <b>chat with the guests</b> and <b>play rock-paper-scissors</b>. They do it <b>completely on their own</b>: nobody is controlling them, not even from far away.',
  vit:[['cup','Job: bartender'],['ruler','Height: 1.73 m'],['heart','Moves: a bit stiff']],
  photos:[['o1','I pour the drinks, I chat with the guests, and I do it all by myself.'],['o2','My dance moves are a little stiff, but so are yours after three drinks.'],['o3','I let her win at rock-paper-scissors. Robots can be gentlemen too.']],
  prompts:[['Something that annoys me','People who ask who’s controlling me. Nobody. Next question.'],['I’m known for','Remembering your name, your drink and your birthday. I even sang it.'],['Ideal date','You order, I pour, and we both pretend I’m not shaking.']],
@@ -1397,7 +1400,7 @@ const P=[
  word:['teleoperation','noun','Controlling a robot or a vehicle from a distance, like a very advanced remote control.','The Optimus bartenders worked by teleoperation: humans were in control.','la téléopération'],
  tip:'“I saw the videos: the robots really served beer at that party. It was all over the news.”'},
 {name:'Model Y',job:'Self-parking Tesla',city:'Spokane, USA',real:true,
- situation:'Spokane, USA, at a small airport. A man calls his Tesla with his phone, so the car drives to him on its own, with <b>nobody inside</b>. On the way, it <b>drives straight into a private jet worth 3.5 million dollars</b>… and keeps pushing.',
+ situation:'At a small airport in Spokane, in the USA, a man calls his Tesla with his phone, and the car drives to him on its own, with <b>nobody inside</b>. On the way, it <b>drives straight into a private jet worth 3.5 million dollars</b>… and keeps pushing.',
  vit:[['phone','Driver: an app'],['plane','Parking: creative'],['money','Insurance: crying']],
  photos:[['t1','He called me, and I went straight to him. Well, almost straight.'],['t2','I’ve always had expensive taste.'],['t3','When I like someone, I don’t stop. I keep pushing.']],
  prompts:[['My biggest flex','My first accident cost more than most people’s houses.'],['Typical Sunday','Updating my software and pretending I’m a brand-new car.'],['Dealbreaker','People who leave me alone in a parking lot. I get bored, and I get creative.']],
@@ -1406,7 +1409,7 @@ const P=[
  word:['override','noun','When a human takes back control from the machine.','The owner could have stopped the car with an override in the app.','la reprise en main'],
  tip:'“A Tesla has eight cameras. It can see a plane. And who drives a Tesla on an airfield?”'},
 {name:'DoNotPay',job:'AI “robot lawyer”',city:'California',real:false,
- situation:'California, February 2023. In a traffic court, a man fights a speeding ticket with <b>an AI “robot lawyer” in his ear</b>: the app listens to the judge and tells him what to say. <b>The judge cancels the ticket.</b> It becomes the first case won by an AI in a real courtroom.',
+ situation:'In February 2023, a man goes to a traffic court in California to fight a speeding ticket. He has <b>an AI “robot lawyer” in his ear</b>: the app listens to the judge and tells him what to say. <b>The judge cancels the ticket</b>. It is the first case ever won by an AI in a real courtroom.',
  vit:[['gavel','Job: lawyer'],['card','Law school: skipped'],['phone','Office: your pocket']],
  photos:[['d1','I won my first case without ever going to law school.'],['d2','I only whisper sweet nothings. Mostly legal arguments.'],['d3','My client paid nothing. It’s literally in my name.']],
  prompts:[['I’m weirdly competitive about','Parking tickets. I’ve fought thousands of them.'],['Biggest risk I’ve taken','Walking into a real courtroom. Real lawyers did not like it.'],['Ideal first date','Coffee, a long walk, and I read the terms and conditions for you.']],
@@ -1415,7 +1418,7 @@ const P=[
  word:['hallucination','noun','When an AI confidently invents information that is not true.','In a courtroom, one hallucination can lose the whole case.','une hallucination'],
  tip:'“I remember this one: “first robot lawyer” was all over the news in 2023.”'},
 {name:'MK30',job:'Amazon delivery drone',city:'Arizona',real:true,
- situation:'Arizona, 10 a.m. Two Amazon delivery drones fly back to the warehouse, one behind the other. <b>Both fly into the same construction crane</b>, <b>within minutes of each other</b>. They crash in two different parking lots.',
+ situation:'One morning in Arizona, two Amazon delivery drones are flying back to the warehouse, one behind the other. <b>Both of them fly into the same construction crane</b>, <b>a few minutes apart</b>. They crash in two different parking lots.',
  vit:[['box','Carries: up to 2.3 kg'],['heart','Status: in a pair'],['eye','Sees: almost everything']],
  photos:[['a1','We do everything together. Literally everything.'],['a2','Where my twin goes, I go. Even into a crane.'],['a3','We ended up in two different parking lots. Long-distance relationships are hard.']],
  prompts:[['I’m weirdly attracted to','Tall, strong guys. Cranes, mostly.'],['Typical delivery','Your package at your door in less than an hour. Unless there’s a crane.'],['Pet peeve','People who order one sock. I flew three kilometres for one sock.']],
@@ -1424,7 +1427,7 @@ const P=[
  word:['payload','noun','What a drone or a vehicle carries: here, your package.','The MK30 can carry a payload of up to 2.3 kilos.','la charge utile'],
  tip:'“Drones have obstacle sensors. One crash, OK. Two drones into the same crane? That’s a joke.”'},
 {name:'Zoox',job:'Amazon’s robotaxi',city:'Las Vegas',real:false,
- situation:'Las Vegas, 2025. Before carrying passengers, a Zoox robotaxi takes <b>the same driving test as humans</b>, with a DMV examiner inside. It passes, and Nevada gives the car <b>its own driving licence</b>, with 12 points.',
+ situation:'In Las Vegas in 2025, before it can carry passengers, a Zoox robotaxi takes <b>the same driving test as humans</b>, with an examiner sitting inside. It passes, and Nevada gives the car <b>its own driving licence</b>, with 12 points.',
  vit:[['wheel','Steering wheel: none'],['card','Licence: Nevada'],['crowd','Seats: face to face']],
  photos:[['z1','I didn’t do the three-point turn. I just drove the other way.'],['z2','Yes, that’s my licence photo. Nobody looks good on these.'],['z3','No steering wheel, no front, no back. I’m basically a very fast living room.']],
  prompts:[['Fun fact','I can drive forwards and backwards without turning around. I never have to face my problems.'],['My biggest flex','I passed my driving test the first time. Can you say the same?'],['Looking for','Someone who can handle a partner with 12 points to lose.']],
@@ -1433,7 +1436,7 @@ const P=[
  word:['certification','noun','Official proof that a system meets the safety rules.','Robotaxis need certification, but they don’t get a driving licence.','l’homologation'],
  tip:'“Nevada was the first state with rules for self-driving cars. A licence for the car sounds like them.”'},
 {name:'Waymo',job:'Robotaxi',city:'San Francisco',real:true,
- situation:'San Francisco, <b>4 a.m.</b> In a parking lot, dozens of self-driving taxis are waiting for customers. <b>One honks.</b> Then another. Then all of them. Night after night, <b>the neighbours can’t sleep</b>.',
+ situation:'In San Francisco, dozens of self-driving taxis wait for customers in a parking lot. At <b>4 a.m.</b>, <b>one of them starts honking</b>. Then another one joins in, then all of them. It happens night after night, and <b>the neighbours can’t sleep</b>.',
  vit:[['crowd','Roommates: 49'],['moon','Bedtime: never'],['house','Neighbours: not fans']],
  photos:[['w1','Some people text their friends at 4 a.m. We just honk.'],['w2','I honk when someone gets too close, which is a problem when you live with 49 other cars.'],['w3','We have a huge fan who watches us live from her window every single night.']],
  prompts:[['Just so you know','We’re not fighting, that’s just how we say good night.'],['Green flag','Someone who closes the door behind them.'],['My ideal Sunday','Going in circles with someone special.']],
@@ -1554,7 +1557,7 @@ const act=()=>islP(S.isl);
 const vkey=(i,r)=>'v'+i+'_'+r;
 const insOf=i=>S.ins['i'+i]||null;
 const isIns=id=>Object.values(S.ins).includes(id);
-const voters=()=>act().filter(p=>!isIns(p.id)&&p.on!==false);
+const voters=()=>act().filter(p=>!isIns(p.id));
 const rankIn=(ps,sc)=>{const a=ps.slice().sort((x,y)=>(sc[y.id]||0)-(sc[x.id]||0)||x.name.localeCompare(y.name));const r={};a.forEach((p,i)=>r[p.id]=i);return r};
 const rankOf=sc=>rankIn(PL,sc);
 function ensure(p){['scores','prev','fooled','right','insCount','streak'].forEach(k=>{if(S[k][p.id]===undefined)S[k][p.id]=0})}
@@ -1641,7 +1644,7 @@ function talkStrip(p){const c=act(),st=c.length?c[(S.round*2+1)%c.length]:null;
  return `<div class="tstrip"><div class="who2">${ic('chat','var(--v)',3)}<span>${st?`<b>${esc(st.name)}</b> starts. Everybody gives one reason, in English.`:'Everybody gives one reason, in English.'}</span></div>
   <div class="phr">${talkPhrases().map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`}
 function voteView(){const vs=voters(),n=vs.length,d=vs.filter(p=>S.votes[p.id]).length;
- return `<div class="vbox"><div class="vtop"><div><div class="t">Vote on your phone!</div><div class="d">The Insider doesn’t vote. They just watch you fall for it.</div></div><div class="cnt"><b id="cnt">${d}</b><span>of ${n} answers</span></div></div>
+ return `<div class="vbox"><div class="vtop"><div><div class="t">Vote on your phone!</div><div class="d">The Insider doesn’t vote. They just watch you fall for it.</div></div><div class="cnt ${n&&d===n?'all':''}"><b id="cnt">${d}</b><span>of ${n} answers</span><em>Everyone voted</em></div></div>
  <div class="tiles"><div class="tile r">${HEART('#fff',10)}Real<small>It’s a match</small></div><div class="tile f">${ic('x','#fff',12)}Fake<small>Ghosted</small></div></div>
  <div class="who-in" id="whoin">${vs.map(p=>S.votes[p.id]?`<span data-w="${p.id}">${ic('check','var(--ok)',2)}${esc(p.name)}</span>`:`<span class="wait" data-w="${p.id}">${esc(p.name)}</span>`).join('')}</div></div>`}
 
@@ -1720,7 +1723,7 @@ function syncSound(){if(MODE!=='host')return;const m=S.screen==='lobby'?'lobby':
 function votesChanged(){if(S.screen!=='game'||S.phase!=='vote')return;const vs=voters(),d=vs.filter(p=>S.votes[p.id]).length;
  const c=$('#cnt');if(c&&+c.textContent!==d){c.textContent=d;SND.pop()}vs.forEach(p=>{const el=document.querySelector(`#whoin [data-w="${p.id}"]`);if(el&&S.votes[p.id]&&el.classList.contains('wait')){el.className='';el.innerHTML=ic('check','var(--ok)',2)+esc(p.name)}});
  if(S.phone)render();
- if(vs.length&&d===vs.length&&!S.allIn){S.allIn=1;later(()=>{if(S.phase==='vote')advance()},900)}}
+ const all=vs.length&&d===vs.length,cb=$('.vtop .cnt');if(cb)cb.classList.toggle('all',!!all);const nx=$('#next');if(nx)nx.classList.toggle('pulse',!!all)}
 
 /* scoring (current island only) */
 /* points: never negative. right +2 · Insider +1 per person fooled · 3 right in a row +1 */
@@ -1758,7 +1761,7 @@ function togglePause(){if(S.paused){S.endsAt=now()+S.left;S.paused=false}else{S.
 let tk=null;
 function tick(){clearInterval(tk);if(MODE!=='host'||S.screen!=='game'||!['read','chat','vote'].includes(S.phase))return;const tot=DUR[S.phase]*1000;
  const u=()=>{const l=S.paused?S.left:Math.max(0,S.endsAt-now());const a=$('#arc'),s=$('#sec'),sec=Math.ceil(l/1000);if(!S.paused&&sec<=5&&sec>0&&sec!==S.lastTick){S.lastTick=sec;SND.tick(sec<=2)}if(a)a.setAttribute('stroke-dashoffset',String(175.9*(1-l/tot)));if(s)s.textContent=S.paused?'II':Math.ceil(l/1000);
-  document.querySelectorAll('.phone .timer').forEach(t=>t.textContent=S.paused?'II':Math.ceil(l/1000)+'s');if(!S.paused&&l<=0){clearInterval(tk);advance()}};
+  document.querySelectorAll('.phone .timer').forEach(t=>t.textContent=S.paused?'II':Math.ceil(l/1000)+'s');if(!S.paused&&l<=0){clearInterval(tk);if(S.phase!=='vote')advance()}};
  u();tk=setInterval(u,200)}
 
 /* podiums */
@@ -1863,7 +1866,7 @@ function renderPlayer(){if(!ROOM){$('#app').innerHTML=mobShell('',`<div class="b
 /* ---------------- boot ---------------- */
 addEventListener('keydown',e=>{if(MODE!=='host'||e.target.matches('input,textarea,select'))return;SND.resume();if(e.key==='m'||e.key==='M'){SND.toggle();render();return}if(e.key==='f'||e.key==='F'){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(_){}return}
  if(S.screen!=='game')return;if(e.key===' '||e.key==='ArrowRight'){e.preventDefault();advance()}else if((e.key==='p'||e.key==='P')&&['read','chat','vote'].includes(S.phase))togglePause()});
-window.__S=S;window.__adv=advance;window.__SND=SND;window.__PL=()=>PL;
+window.__S=S;window.__adv=advance;window.__render=render;window.__SND=SND;window.__PL=()=>PL;
 if(MODE==='player')startPlayer();else{render();if(LIVE)startLive();else startSim()}
 })();
 </script>
