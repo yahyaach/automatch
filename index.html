@@ -472,6 +472,18 @@ body.player #wrap{position:static;transform:none!important;width:auto;height:aut
 .ovc.has .ovb:not(.on){opacity:.45}
 .ovall{display:flex;align-items:center;gap:10px;flex:none}.ovall span{font-size:16px;font-weight:600;color:var(--mut)}
 .ovall .btn{background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);gap:8px}
+/* no replayed entrance animations when the same screen re-renders */
+#app.still *{animation:none!important}
+#app.still .deb,#app.still .hearts{display:none}
+#app.still .live i,#app.still .ibh .live i{animation:blink 1s infinite!important}
+#app.still .insn{animation:ipl 2.4s ease-in-out infinite!important}
+#app.still #next.pulse{animation:npl 1.4s ease-in-out infinite!important}
+.devg.gm{position:absolute;right:8px;bottom:6px;z-index:20}
+.devp.gp{z-index:21;bottom:40px;right:10px;width:420px}
+.rsc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--bg);border-radius:14px;padding:10px 14px;transition:background .15s}
+.rsc:hover{background:#ebe5da}.rsc b{font-family:var(--sans);font-size:16px}.rsc small{font-size:13.5px;color:var(--mut);line-height:1.3}
+.rsc.arm{background:var(--bad);color:#fff}.rsc.arm small{color:#ffe3e6}
+#app.still .devp{animation:none}
 </style>
 </head>
 <body>
@@ -1588,17 +1600,20 @@ const rankOf=sc=>rankIn(PL,sc);
 function ensure(p){['scores','prev','fooled','right','insCount','streak'].forEach(k=>{if(S[k][p.id]===undefined)S[k][p.id]=0})}
 let timers=[];const later=(f,ms)=>timers.push(setTimeout(f,ms));const clearT=()=>{timers.forEach(clearTimeout);timers=[]};
 
+let lastVK='';
 function render(){fit();const app=$('#app');
  if(MODE==='player'){renderPlayer();return}
+ const vk=S.screen+'|'+S.isl+'|'+S.round+'|'+(S.screen==='game'?S.phase:'');app.classList.toggle('still',vk===lastVK);lastVK=vk;
  app.innerHTML=S.screen==='lobby'?lobbyView():S.screen==='islandEnd'?islandEndView():S.screen==='final'?finalView():gameView();
  if(!LIVE&&!OFF)app.insertAdjacentHTML('beforeend',`<button class="btn sm w phbtn ${S.screen==='game'?'intop':''}" id="phb" style="box-shadow:0 6px 20px rgba(0,0,0,.15)">${ic('phone','var(--ink)',3)}${S.screen==='game'?'':(S.phone?'Hide':'Show')+' a player’s phone'}</button>${S.phone&&PL.length?previewPhone():''}`);
+ if(S.screen!=='lobby')app.insertAdjacentHTML('beforeend',rescuePanel());
  bindHost();hydrate();
  if((S.screen==='islandEnd'||S.screen==='final')&&!S.cheered){S.cheered=1;later(()=>hearts($('#app')),300)}}
 function bindHost(){const on=(s,f)=>{const e=$(s);if(e)e.onclick=f};
  on('#phb',()=>{S.phone=!S.phone;render()});
  document.querySelectorAll('[data-ov]').forEach(el=>el.onclick=()=>{if(S.phase!=='vote')return;const id=el.dataset.ov,v=el.dataset.v;if(S.votes[id]===v)delete S.votes[id];else S.votes[id]=v;SND.pop();saveOff();render()});
  document.querySelectorAll('[data-ovall]').forEach(el=>el.onclick=()=>{if(S.phase!=='vote')return;const v=el.dataset.ovall;voters().forEach(p=>{if(v)S.votes[p.id]=v;else delete S.votes[p.id]});saveOff();render()});
- on('#devgear',()=>{S.dev=!S.dev;render()});on('#devoff',()=>{try{localStorage.setItem('am-nophones',OFF?'0':'1');localStorage.removeItem('am-off-save')}catch(e){}location.reload()});on('#devreset',()=>{try{localStorage.removeItem('am-off-save')}catch(e){}location.reload()});document.querySelectorAll('.sndb').forEach(el=>el.onclick=()=>{SND.resume();SND.toggle();render()});document.querySelectorAll('#start,#next,#tolobby,#tofinal').forEach(el=>el.addEventListener('click',()=>SND.resume()));on('#next',advance);on('#pause',togglePause);on('#start',startIsland);on('#again',newGame);on('#newroom',newGame);on('#simgo',()=>{LIVE=false;NETERR='';startSim()});
+ on('#devgear',()=>{S.dev=!S.dev;S.devArm=null;render()});document.querySelectorAll('[data-dv]').forEach(el=>el.onclick=()=>{const k=el.dataset.dv;if(S.devArm===k)rescue(k);else{S.devArm=k;render()}});on('#devoff',()=>{try{localStorage.setItem('am-nophones',OFF?'0':'1');localStorage.removeItem('am-off-save')}catch(e){}location.reload()});on('#devreset',()=>{try{localStorage.removeItem('am-off-save')}catch(e){}location.reload()});document.querySelectorAll('.sndb').forEach(el=>el.onclick=()=>{SND.resume();SND.toggle();render()});document.querySelectorAll('#start,#next,#tolobby,#tofinal').forEach(el=>el.addEventListener('click',()=>SND.resume()));on('#next',advance);on('#pause',togglePause);on('#start',startIsland);on('#again',newGame);on('#newroom',newGame);on('#simgo',()=>{LIVE=false;NETERR='';startSim()});
  on('#tofinal',()=>{S.screen='final';S.cheered=0;push();render()});on('#tolobby',()=>{S.screen='lobby';const n=[0,1,2].find(i=>!S.done.includes(i));if(n!==undefined)S.isl=n;push();render()});
  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.isl=+b.dataset.tab;push();render()});
  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{if(LIVE)ref('players/'+b.dataset.rm).remove()});
@@ -1637,9 +1652,11 @@ function lobbyView(){const url=LIVE?joinURL():'';const short=url.replace(/^https
  </div>`}
 /* game */
 function startIsland(){clearT();PL.forEach(p=>p.nw=false);const i=S.isl;if(S.done.includes(i)){islP(i).forEach(p=>{S.scores[p.id]=0;S.fooled[p.id]=0;S.right[p.id]=0;S.insCount[p.id]=0;S.streak[p.id]=0});S.done=S.done.filter(x=>x!==i)}
- S.order=shuffleOrder();S.screen='game';S.round=0;S.cheered=0;startRound()}
+ S.order=shuffleOrder();S.screen='game';S.round=0;S.cheered=0;S.snapI=snap();startRound()}
+const snap=()=>JSON.parse(JSON.stringify(Object.fromEntries(['scores','prev','fooled','right','insCount','streak','best'].map(k=>[k,S[k]||{}]))));
+function unsnap(sn){if(sn)Object.assign(S,JSON.parse(JSON.stringify(sn)))}
 function pickInsiders(){S.ins={};if(OFF)return;const ps=act().filter(p=>p.on!==false);if(ps.length<2)return;const min=Math.min(...ps.map(p=>S.insCount[p.id]||0));const c=ps.filter(p=>(S.insCount[p.id]||0)===min);const pick=c[Math.floor(R()*c.length)];S.ins['i'+S.isl]=pick.id;S.insCount[pick.id]=(S.insCount[pick.id]||0)+1}
-function startRound(){clearT();S.lastTick=0;S.votes={};S.phase='read';S.t0=Date.now();S.animDone=false;pickInsiders();setT(DUR.read);push();render()}
+function startRound(){clearT();S.lastTick=0;S.votes={};S.snapR=snap();S.phase='read';S.t0=Date.now();S.animDone=false;pickInsiders();setT(DUR.read);push();render()}
 function setT(s){S.endsAt=now()+s*1000;S.left=s*1000;S.paused=false;S.tPhase=Date.now()}
 const STEPS=[['read','Read'],['chat','Look & talk'],['vote','Vote'],['reveal','Answer']];
 function stepper(){const i=STEPS.findIndex(s=>s[0]===S.phase),timed=['read','chat','vote'].includes(S.phase);
@@ -1789,6 +1806,20 @@ function advance(){clearT();S.allIn=0;S.lastTick=0;
  if(S.phase==='chat'){S.phase='vote';setT(DUR.vote);push();render();if(!LIVE&&!OFF)simVotes();return}
  if(S.phase==='vote'){score();S.phase='reveal';S.animDone=false;pushResults();push();render();return}
  if(S.round<P.length-1){S.round++;startRound()}else{if(!S.done.includes(S.isl))S.done.push(S.isl);S.screen='islandEnd';S.cheered=0;push();render()}}
+function clearRoundData(i,r){if(LIVE&&db){ref('votes/'+vkey(i,r)).remove();ref('results/'+vkey(i,r)).remove()}}
+function rescue(kind){clearT();S.dev=false;S.devArm=null;const i=S.isl;
+ const undoRound=()=>{if(S.snapR)unsnap(S.snapR);else if(S.phase==='reveal')Object.keys(S.delta||{}).forEach(id=>S.scores[id]=(S.scores[id]||0)-(S.delta[id]||0));S.delta={};S.bonus={};S.last={};S.votes={};clearRoundData(i,S.round)};
+ if(kind==='redo'){undoRound();startRound();return}
+ if(kind==='skip'){undoRound();if(S.round<P.length-1){S.round++;startRound()}else{if(!S.done.includes(i))S.done.push(i);S.screen='islandEnd';S.cheered=0;push();render()}return}
+ if(kind==='island'){for(let r=0;r<P.length;r++)clearRoundData(i,r);if(S.snapI)unsnap(S.snapI);else islP(i).forEach(p=>{['scores','fooled','right','insCount','streak'].forEach(k=>S[k][p.id]=0)});
+  S.done=S.done.filter(x=>x!==i);S.screen='lobby';S.round=0;S.phase='read';S.votes={};S.ins={};S.delta={};S.last={};S.paused=false;push();render();return}
+ if(kind==='all'){newGame()}}
+function rescuePanel(){const n=ISLN[S.isl],arm=S.devArm,it=(k,t,d)=>`<button class="rsc ${arm===k?'arm':''}" data-dv="${k}"><b>${arm===k?'Click again to confirm':t}</b><small>${d}</small></button>`;
+ return `<button id="devgear" class="devg gm" aria-label="Rescue options">${ic('eye','currentColor',2)}</button>${S.dev?`<div class="devp gp"><b>Rescue</b>
+ ${S.screen==='game'?it('redo','Restart this profile','Back to the start of this profile. Its votes and points are erased.')+it('skip','Skip this profile','Nobody gets points for it. Goes to the next profile.'):''}
+ ${it('island','Cancel Island '+n,'Back to the first screen. Island '+n+'’s points are erased; the other islands keep theirs.')}
+ ${it('all','Reset the whole game','Everybody back to 0'+(LIVE?', with a new room code':'')+'.')}
+ <small>Press D to close.</small></div>`:''}`}
 function togglePause(){if(S.paused){S.endsAt=now()+S.left;S.paused=false}else{S.left=Math.max(0,S.endsAt-now());S.paused=true}push();render()}
 let tk=null;
 function tick(){clearInterval(tk);if(MODE!=='host'||S.screen!=='game'||!['read','chat','vote'].includes(S.phase))return;const tot=DUR[S.phase]*1000;
@@ -1833,7 +1864,7 @@ function castVote(id,v){if(S.phase!=='vote'||S.votes[id])return;S.votes[id]=v;vo
 
 /* ---------- host: live ---------- */
 function code(){const w=['HONK','BEEP','ZOOM','BOLT','DRONE','ROBO','TURBO','PIXEL'];return w[Math.floor(Math.random()*w.length)]+'-'+(10+Math.floor(Math.random()*90))}
-function saveOff(){if(!OFF)return;try{const o={};['screen','isl','done','order','round','phase','votes','scores','prev','delta','fooled','right','insCount','streak','bonus','last','ins','best','left'].forEach(k=>o[k]=S[k]);if(['read','chat','vote'].includes(S.phase)&&S.screen==='game')o.left=S.paused?S.left:Math.max(0,S.endsAt-Date.now());localStorage.setItem('am-off-save',JSON.stringify(o))}catch(e){}}
+function saveOff(){if(!OFF)return;try{const o={};['screen','isl','done','order','round','phase','votes','scores','prev','delta','fooled','right','insCount','streak','bonus','last','ins','best','left','snapI','snapR'].forEach(k=>o[k]=S[k]);if(['read','chat','vote'].includes(S.phase)&&S.screen==='game')o.left=S.paused?S.left:Math.max(0,S.endsAt-Date.now());localStorage.setItem('am-off-save',JSON.stringify(o))}catch(e){}}
 function loadOff(){try{const o=JSON.parse(localStorage.getItem('am-off-save')||'null');if(!o)return;Object.assign(S,o);if(S.screen==='game'){S.animDone=true;if(['read','chat','vote'].includes(S.phase)){S.paused=true;S.left=o.left||0}}}catch(e){}}
 function push(){saveOff();if(!LIVE||!db)return;const p=cur()||P[0];
  ref('state').set({screen:S.screen,isl:S.isl,done:S.done.length?S.done.join(','):'',order:S.order.join(','),round:S.round,n:P.length,phase:S.phase,endsAt:S.endsAt,paused:S.paused,left:S.left,ins:S.ins,key:ans(p),tip:p.tip,k:mult(p)});
@@ -1885,9 +1916,11 @@ function liveModel(){const st=ROOM.state||{screen:'lobby'},ps=ROOM.players||{},m
  let fooled=0;if(rs&&rs.last)Object.values(rs.last).forEach(L=>{if(L.ins===PID)fooled=L.fooled});
  return {screen:st.screen||'lobby',curIsl:ci,done:dn,name:me.name,isl:me.isl|0,round:st.round||0,phase:st.phase,endsAt:st.endsAt,paused:st.paused,left:st.left,insider:ins,key:st.key,tip:st.tip,k:st.k||1,myVote:myv,
   res:st.phase==='reveal'&&rs?{d:(rs.delta||{})[PID]||0,bonus:(rs.bonus||{})[PID]||0,isIns:ins,fooled}:null,rank:rk,np:srt.length,orank:all.indexOf(PID),onp:all.length,total:sc[PID]||0,ahead:ab?{name:ps[ab].name,diff:(sc[ab]||0)-(sc[PID]||0)}:null}}
+let lastPK='';
 function renderPlayer(){if(!ROOM){$('#app').innerHTML=mobShell('',`<div class="big">Room not found</div><div class="tx">Check the code on the big screen.</div><button class="btn v" id="rcb">Try another code</button>`);$('#rcb').onclick=()=>location.href=location.pathname+'#play';return}
  const m=liveModel();const pts=m.screen!=='join'?`${esc(m.name)} · ${plural(m.total,'pt')}${timerPill(m)}`:'';
  const a=document.activeElement&&document.activeElement.id==='jn';
+ {const st=ROOM.state||{},pk=m.screen+'|'+(st.isl|0)+'|'+st.round+'|'+st.phase+'|'+(m.myVote||'');$('#app').classList.toggle('still',pk===lastPK);lastPK=pk}
  $('#app').innerHTML=mobShell(pts,phoneBody(m));
  if(m.screen!=='join'&&m.isl!==undefined)$('.mob .hd').style.boxShadow=`inset 0 -4px 0 ${['#ef5b3a','#11a07d','#2f6fe4'][m.isl]}`;
  const jn=$('#jn');if(jn){jn.oninput=e=>{JF.name=e.target.value};if(a){jn.focus();jn.setSelectionRange(jn.value.length,jn.value.length)}}
@@ -1899,7 +1932,7 @@ function renderPlayer(){if(!ROOM){$('#app').innerHTML=mobShell('',`<div class="b
  document.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>{const st=ROOM.state||{};if(st.screen!=='game'||st.phase!=='vote'||m.myVote||m.insider||(st.isl|0)!==m.isl)return;if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}ref('votes/v'+(st.isl|0)+'_'+st.round+'/'+PID).set(b.dataset.pv)})}
 
 /* ---------------- boot ---------------- */
-addEventListener('keydown',e=>{if(MODE!=='host'||e.target.matches('input,textarea,select'))return;SND.resume();if(e.key==='m'||e.key==='M'){SND.toggle();render();return}if((e.key==='d'||e.key==='D')&&S.screen==='lobby'){S.dev=!S.dev;render();return}if(e.key==='f'||e.key==='F'){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(_){}return}
+addEventListener('keydown',e=>{if(MODE!=='host'||e.target.matches('input,textarea,select'))return;SND.resume();if(e.key==='m'||e.key==='M'){SND.toggle();render();return}if(e.key==='d'||e.key==='D'){S.dev=!S.dev;S.devArm=null;render();return}if(e.key==='f'||e.key==='F'){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(_){}return}
  if(S.screen!=='game')return;if(e.key===' '||e.key==='ArrowRight'){e.preventDefault();advance()}else if((e.key==='p'||e.key==='P')&&['read','chat','vote'].includes(S.phase))togglePause()});
 window.__S=S;window.__adv=advance;window.__render=render;window.__SND=SND;window.__PL=()=>PL;
 if(MODE==='player')startPlayer();else if(OFF){PL=SIMPL.map(p=>({id:p.id,name:p.name,isl:p.isl,on:true}));PL.forEach(ensure);loadOff();render()}else{render();if(LIVE)startLive();else startSim()}
