@@ -448,6 +448,30 @@ body.player #wrap{position:static;transform:none!important;width:auto;height:aut
 .cnt em{display:none;font-style:normal;font-size:14px;font-weight:700;color:var(--ok);margin-top:2px}
 .cnt.all{box-shadow:inset 0 0 0 2.5px var(--ok)}.cnt.all em{display:block}.cnt.all b{color:var(--ok)}
 #next.pulse{animation:npl 1.4s ease-in-out infinite}@keyframes npl{50%{box-shadow:0 0 0 8px rgba(90,43,208,.22)}}
+
+/* no-phones mode */
+.join.tv{grid-row:2/4;display:flex;flex-direction:column;gap:14px;padding:26px 30px}
+.join.tv .k{font-size:16px}.join.tv h3{font-family:var(--serif);font-weight:800;font-size:46px;line-height:1;letter-spacing:-1px;margin-top:-6px}
+.th2{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0}
+.th2>div{border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;text-align:center}
+.th2 .tr{background:var(--v)}.th2 .tf{background:var(--ink)}
+.th2 b{font-family:var(--serif);font-weight:800;font-size:31px;line-height:1;white-space:nowrap}.th2 span{font-size:17px;font-weight:600;opacity:.85}
+.join.tv p{font-size:19px;line-height:1.4;color:#4a4553}.join.tv p b{color:var(--ink)}
+.devg{position:absolute;right:12px;bottom:10px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink);opacity:.18;z-index:5}
+.devg:hover{opacity:.6}
+.devp{position:absolute;right:12px;bottom:44px;width:400px;background:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 18px 40px rgba(22,19,29,.22),inset 0 0 0 1.5px var(--line);display:flex;flex-direction:column;gap:10px;z-index:6;font-size:16px}
+.devp b{font-family:var(--serif);font-size:20px}.devp label{display:flex;gap:10px;align-items:flex-start;line-height:1.35;cursor:pointer}.devp input{width:20px;height:20px;margin-top:1px;accent-color:var(--v);flex:none}
+.devp small{color:var(--mut);font-size:13px}.devp .newr{align-self:flex-start}
+.ovg{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:14px;flex:1;min-height:0}
+.ovc{background:#fff;border-radius:24px;padding:14px;box-shadow:inset 0 0 0 1.5px var(--line);display:flex;flex-direction:column;gap:10px}
+.ovc.has{box-shadow:inset 0 0 0 2.5px var(--ok)}
+.ovn{font-family:var(--serif);font-weight:800;font-size:27px;text-align:center;padding:4px 0 2px}
+.ovb{flex:1;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-family:var(--serif);font-weight:800;font-size:26px;background:var(--bg);color:var(--ink);transition:transform .1s}
+.ovb:active{transform:scale(.97)}.ovb.r{color:var(--v)}
+.ovb.r.on{background:var(--v);color:#fff}.ovb.f.on{background:var(--ink);color:#fff}
+.ovc.has .ovb:not(.on){opacity:.45}
+.ovall{display:flex;align-items:center;gap:10px;flex:none}.ovall span{font-size:16px;font-weight:600;color:var(--mut)}
+.ovall .btn{background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);gap:8px}
 </style>
 </head>
 <body>
@@ -1492,7 +1516,8 @@ const plural=(n,w)=>n+' '+w+(Math.abs(n)===1?'':'s');
 const qs=new URLSearchParams(location.search);
 const ROOM_Q=(qs.get('room')||'').toUpperCase().replace(/[^A-Z0-9-]/g,'');
 const MODE=(ROOM_Q||location.hash==='#play')?'player':'host';
-let LIVE=!!FIREBASE_CONFIG,NETERR='';
+let OFF=false;try{OFF=localStorage.getItem('am-nophones')==='1'}catch(e){}
+let LIVE=!!FIREBASE_CONFIG&&!OFF,NETERR='';
 let db=null,off=0;const now=()=>Date.now()+off;
 const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('load '+src));document.head.appendChild(s)});
 async function fbInit(){await loadScript(FB+'firebase-app-compat.js');await loadScript(FB+'firebase-database-compat.js');
@@ -1566,11 +1591,14 @@ let timers=[];const later=(f,ms)=>timers.push(setTimeout(f,ms));const clearT=()=
 function render(){fit();const app=$('#app');
  if(MODE==='player'){renderPlayer();return}
  app.innerHTML=S.screen==='lobby'?lobbyView():S.screen==='islandEnd'?islandEndView():S.screen==='final'?finalView():gameView();
- if(!LIVE)app.insertAdjacentHTML('beforeend',`<button class="btn sm w phbtn ${S.screen==='game'?'intop':''}" id="phb" style="box-shadow:0 6px 20px rgba(0,0,0,.15)">${ic('phone','var(--ink)',3)}${S.screen==='game'?'':(S.phone?'Hide':'Show')+' a player’s phone'}</button>${S.phone&&PL.length?previewPhone():''}`);
+ if(!LIVE&&!OFF)app.insertAdjacentHTML('beforeend',`<button class="btn sm w phbtn ${S.screen==='game'?'intop':''}" id="phb" style="box-shadow:0 6px 20px rgba(0,0,0,.15)">${ic('phone','var(--ink)',3)}${S.screen==='game'?'':(S.phone?'Hide':'Show')+' a player’s phone'}</button>${S.phone&&PL.length?previewPhone():''}`);
  bindHost();hydrate();
  if((S.screen==='islandEnd'||S.screen==='final')&&!S.cheered){S.cheered=1;later(()=>hearts($('#app')),300)}}
 function bindHost(){const on=(s,f)=>{const e=$(s);if(e)e.onclick=f};
- on('#phb',()=>{S.phone=!S.phone;render()});document.querySelectorAll('.sndb').forEach(el=>el.onclick=()=>{SND.resume();SND.toggle();render()});document.querySelectorAll('#start,#next,#tolobby,#tofinal').forEach(el=>el.addEventListener('click',()=>SND.resume()));on('#next',advance);on('#pause',togglePause);on('#start',startIsland);on('#again',newGame);on('#newroom',newGame);on('#simgo',()=>{LIVE=false;NETERR='';startSim()});
+ on('#phb',()=>{S.phone=!S.phone;render()});
+ document.querySelectorAll('[data-ov]').forEach(el=>el.onclick=()=>{if(S.phase!=='vote')return;const id=el.dataset.ov,v=el.dataset.v;if(S.votes[id]===v)delete S.votes[id];else S.votes[id]=v;SND.pop();saveOff();render()});
+ document.querySelectorAll('[data-ovall]').forEach(el=>el.onclick=()=>{if(S.phase!=='vote')return;const v=el.dataset.ovall;voters().forEach(p=>{if(v)S.votes[p.id]=v;else delete S.votes[p.id]});saveOff();render()});
+ on('#devgear',()=>{S.dev=!S.dev;render()});on('#devoff',()=>{try{localStorage.setItem('am-nophones',OFF?'0':'1');localStorage.removeItem('am-off-save')}catch(e){}location.reload()});on('#devreset',()=>{try{localStorage.removeItem('am-off-save')}catch(e){}location.reload()});document.querySelectorAll('.sndb').forEach(el=>el.onclick=()=>{SND.resume();SND.toggle();render()});document.querySelectorAll('#start,#next,#tolobby,#tofinal').forEach(el=>el.addEventListener('click',()=>SND.resume()));on('#next',advance);on('#pause',togglePause);on('#start',startIsland);on('#again',newGame);on('#newroom',newGame);on('#simgo',()=>{LIVE=false;NETERR='';startSim()});
  on('#tofinal',()=>{S.screen='final';S.cheered=0;push();render()});on('#tolobby',()=>{S.screen='lobby';const n=[0,1,2].find(i=>!S.done.includes(i));if(n!==undefined)S.isl=n;push();render()});
  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.isl=+b.dataset.tab;push();render()});
  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{if(LIVE)ref('players/'+b.dataset.rm).remove()});
@@ -1588,28 +1616,29 @@ function lobbyNames(i){const chip=(p)=>`<span class="${p.nw?'nw':''} ${p.on===fa
  return ROSTER[i].map((n,j)=>{const p=pl(rid(i,j));return p?chip(p):`<span class="wait"><span class="nmw">${esc(n)}</span></span>`}).concat(islP(i).filter(p=>p.id[0]!=='r').map(chip)).join('')}
 function islTotal(i){return islP(i).reduce((a,p)=>a+(S.scores[p.id]||0),0)}
 function lobbyView(){const url=LIVE?joinURL():'';const short=url.replace(/^https?:\/\//,'').replace(/\?room=.*/,'');const i=S.isl,n=islP(i).length,isDone=S.done.includes(i);
- const banner=LIVE?`<span class="banner live"><i></i>Live: phones connect through the internet</span>`:NETERR?`<span class="banner err"><i></i>${esc(NETERR)}</span>`:`<span class="banner sim"><i></i>Simulation mode</span>`;
+ const banner=OFF?'':LIVE?`<span class="banner live"><i></i>Live: phones connect through the internet</span>`:NETERR?`<span class="banner err"><i></i>${esc(NETERR)}</span>`:`<span class="banner sim"><i></i>Simulation mode</span>`;
  const step=(k,icn,t,d)=>`<div class="hs"><div class="hn"><b>${k}</b>${ic(icn,'var(--v)',3)}</div><h4>${t}</h4><p>${d}</p></div>`;
  return `<div class="lob3">
  <div class="lt"><div class="brand">${HEART('var(--v)',4)}AutoMatch${banner}</div><h1>The dating app for robots that <em>really</em> did that.</h1></div>
  <div class="rt"><div class="pick">Tap the island that plays now (any order)</div>
-  <div class="tabs">${[0,1,2].map(k=>`<button data-tab="${k}" class="${k===i?'on':''}" style="--c:${ISLH[k]}"><span class="tn"><span class="dot" style="background:${k===i?'#fff':ISL[k]}"></span>Island ${ISLN[k]}</span><small>${S.done.includes(k)?ic('check',k===i?'#fff':'var(--ok)',2)+' played · '+islTotal(k)+' pts':islP(k).length+' / '+ROSTER[k].length+' in'}</small></button>`).join('')}</div></div>
- <div class="join j3"><div class="qr">${LIVE?qrSvg(url):qrSvg('AutoMatch simulation')}</div><div class="jt"><div class="k">Join on your phone</div><div class="u">Scan the code, or open<br><b>${LIVE?esc(short):'the game link'}</b></div><div class="k" style="margin-top:6px">then tap your name.</div></div><div class="codeb"><span>Room code</span><b>${LIVE?esc(CODE):'HONK-42'}</b></div></div>
- <div class="now-isl n3" style="--c:${ISLH[i]}"><div class="nh"><div><div class="k">${isDone?'Already played':'Now playing'}</div><div class="t">Island ${ISLN[i]}</div></div><div class="cnt2"><b>${n}</b> / ${ROSTER[i].length} on their phones</div></div>
+  <div class="tabs">${[0,1,2].map(k=>`<button data-tab="${k}" class="${k===i?'on':''}" style="--c:${ISLH[k]}"><span class="tn"><span class="dot" style="background:${k===i?'#fff':ISL[k]}"></span>Island ${ISLN[k]}</span><small>${S.done.includes(k)?ic('check',k===i?'#fff':'var(--ok)',2)+' played · '+islTotal(k)+' pts':(OFF?ROSTER[k].length+' players':islP(k).length+' / '+ROSTER[k].length+' in')}</small></button>`).join('')}</div></div>
+ ${OFF?`<div class="join tv"><div class="k">No phones today</div><h3>Vote with your thumb</h3><div class="th2"><div class="tr">${HEART('#fff',8)}<b>Thumb up</b><span>Real · it’s a match</span></div><div class="tf">${ic('x','#fff',9)}<b>Thumb down</b><span>Fake · ghosted</span></div></div><p>When it’s time to vote, everybody shows their thumb <b>at the same time</b>. No changing your mind!</p></div>`:`<div class="join j3"><div class="qr">${LIVE?qrSvg(url):qrSvg('AutoMatch simulation')}</div><div class="jt"><div class="k">Join on your phone</div><div class="u">Scan the code, or open<br><b>${LIVE?esc(short):'the game link'}</b></div><div class="k" style="margin-top:6px">then tap your name.</div></div><div class="codeb"><span>Room code</span><b>${LIVE?esc(CODE):'HONK-42'}</b></div></div>`}
+ <div class="now-isl n3" style="--c:${ISLH[i]}"><div class="nh"><div><div class="k">${isDone?'Already played':'Now playing'}</div><div class="t">Island ${ISLN[i]}</div></div><div class="cnt2">${OFF?`<b>${n}</b> players`:`<b>${n}</b> / ${ROSTER[i].length} on their phones`}</div></div>
    <div class="pp big2">${lobbyNames(i)}</div>
    <div class="bot">${sndBtn(1)}${NETERR?`<button class="btn soft" id="simgo">Play the simulation</button>`:''}${LIVE?`<button class="newr" id="newroom">New room code</button>`:''}${S.done.length?`<button class="btn soft" id="tofinal">Final results</button>`:''}<button class="btn v" id="start" ${n<2?'disabled style="opacity:.4;pointer-events:none"':''}>${HEART('#fff',3)}${isDone?'Replay':'Start'} Island ${ISLN[i]}</button></div></div>
  <div class="how3"><div class="hh">How a round works <span>8 profiles per island · every player for themselves</span></div>
-  <div class="hsteps">${step(1,'eye','Read','A real machine and one story about it. Read it out loud.')}${step(2,'chat','Talk','Look at the photos, then 30 seconds with your island, in English.')}${step(3,'phone','Vote','On your phone. Real: it’s a match. Fake: ghosted.')}${step(4,'heart','Answer','The truth, the real story and a new word.')}</div>
+  <div class="hsteps">${step(1,'eye','Read','A real machine and one story about it. Read it out loud.')}${step(2,'chat','Talk','Look at the photos, then 30 seconds with your island, in English.')}${OFF?step(3,'heart','Vote','Show your thumb. Up: it’s a match. Down: ghosted.'):step(3,'phone','Vote','On your phone. Real: it’s a match. Fake: ghosted.')}${step(4,'heart','Answer','The truth, the real story and a new word.')}</div>
   <div class="pts"><span><b>+2</b>right answer</span><span><b>+1</b>bonus for 3 right in a row</span><span class="nn">Nobody ever loses points.</span></div></div>
- <div class="ins3"><div class="ih">${ic('shh','#fff',7)}<div><small>Watch out for</small><h3>The Insider</h3></div></div>
+ ${OFF?'':`<div class="ins3"><div class="ih">${ic('shh','#fff',7)}<div><small>Watch out for</small><h3>The Insider</h3></div></div>
   <p>Every round, <b>one player on your island</b> secretly gets the answer on their phone.</p>
   <p>Their mission: <b>make you vote wrong.</b> They don’t vote, they talk.</p>
-  <div class="ip"><b>+1</b> for every person they fool</div></div>
+  <div class="ip"><b>+1</b> for every person they fool</div></div>`}
+ <button id="devgear" class="devg" aria-label="Developer options">${ic('eye','currentColor',2)}</button>${S.dev?`<div class="devp"><b>Developer options</b><label><input type="checkbox" id="devoff" ${OFF?'checked':''}> No phones: I enter everyone’s votes myself (no Insider)</label>${OFF?'<button class="newr" id="devreset">Reset the saved game</button>':''}<small>Saved on this computer. The page reloads when you change it.</small></div>`:''}
  </div>`}
 /* game */
 function startIsland(){clearT();PL.forEach(p=>p.nw=false);const i=S.isl;if(S.done.includes(i)){islP(i).forEach(p=>{S.scores[p.id]=0;S.fooled[p.id]=0;S.right[p.id]=0;S.insCount[p.id]=0;S.streak[p.id]=0});S.done=S.done.filter(x=>x!==i)}
  S.order=shuffleOrder();S.screen='game';S.round=0;S.cheered=0;startRound()}
-function pickInsiders(){S.ins={};const ps=act().filter(p=>p.on!==false);if(ps.length<2)return;const min=Math.min(...ps.map(p=>S.insCount[p.id]||0));const c=ps.filter(p=>(S.insCount[p.id]||0)===min);const pick=c[Math.floor(R()*c.length)];S.ins['i'+S.isl]=pick.id;S.insCount[pick.id]=(S.insCount[pick.id]||0)+1}
+function pickInsiders(){S.ins={};if(OFF)return;const ps=act().filter(p=>p.on!==false);if(ps.length<2)return;const min=Math.min(...ps.map(p=>S.insCount[p.id]||0));const c=ps.filter(p=>(S.insCount[p.id]||0)===min);const pick=c[Math.floor(R()*c.length)];S.ins['i'+S.isl]=pick.id;S.insCount[pick.id]=(S.insCount[pick.id]||0)+1}
 function startRound(){clearT();S.lastTick=0;S.votes={};S.phase='read';S.t0=Date.now();S.animDone=false;pickInsiders();setT(DUR.read);push();render()}
 function setT(s){S.endsAt=now()+s*1000;S.left=s*1000;S.paused=false;S.tPhase=Date.now()}
 const STEPS=[['read','Read'],['chat','Look & talk'],['vote','Vote'],['reveal','Answer']];
@@ -1644,6 +1673,9 @@ function talkStrip(p){const c=act(),st=c.length?c[(S.round*2+1)%c.length]:null;
  return `<div class="tstrip"><div class="who2">${ic('chat','var(--v)',3)}<span>${st?`<b>${esc(st.name)}</b> starts. Everybody gives one reason, in English.`:'Everybody gives one reason, in English.'}</span></div>
   <div class="phr">${talkPhrases().map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`}
 function voteView(){const vs=voters(),n=vs.length,d=vs.filter(p=>S.votes[p.id]).length;
+ if(OFF)return `<div class="vbox"><div class="vtop"><div><div class="t">Vote with your thumb!</div><div class="d">Thumb up: Real, it’s a match. Thumb down: Fake, ghosted.</div></div><div class="cnt ${n&&d===n?'all':''}"><b id="cnt">${d}</b><span>of ${n} answers</span><em>Everyone voted</em></div></div>
+ <div class="ovg" style="--n:${Math.min(n,5)}">${vs.map(p=>{const v=S.votes[p.id];return `<div class="ovc ${v?'has':''}"><div class="ovn">${esc(p.name)}</div><button class="ovb r ${v==='real'?'on':''}" data-ov="${p.id}" data-v="real">${HEART(v==='real'?'#fff':'var(--v)',4)}Real</button><button class="ovb f ${v==='fake'?'on':''}" data-ov="${p.id}" data-v="fake">${ic('x',v==='fake'?'#fff':'var(--ink)',5)}Fake</button></div>`}).join('')}</div>
+ <div class="ovall"><span>Everyone:</span><button class="btn soft sm" data-ovall="real">${HEART('var(--v)',3)}All Real</button><button class="btn soft sm" data-ovall="fake">${ic('x','var(--ink)',3)}All Fake</button><button class="btn soft sm" data-ovall="">Clear</button></div></div>`;
  return `<div class="vbox"><div class="vtop"><div><div class="t">Vote on your phone!</div><div class="d">The Insider doesn’t vote. They just watch you fall for it.</div></div><div class="cnt ${n&&d===n?'all':''}"><b id="cnt">${d}</b><span>of ${n} answers</span><em>Everyone voted</em></div></div>
  <div class="tiles"><div class="tile r">${HEART('#fff',10)}Real<small>It’s a match</small></div><div class="tile f">${ic('x','#fff',12)}Fake<small>Ghosted</small></div></div>
  <div class="who-in" id="whoin">${vs.map(p=>S.votes[p.id]?`<span data-w="${p.id}">${ic('check','var(--ok)',2)}${esc(p.name)}</span>`:`<span class="wait" data-w="${p.id}">${esc(p.name)}</span>`).join('')}</div></div>`}
@@ -1729,7 +1761,7 @@ function votesChanged(){if(S.screen!=='game'||S.phase!=='vote')return;const vs=v
 /* points: never negative. right +2 · Insider +1 per person fooled · 3 right in a row +1 */
 const PTS={right:2,fool:1,streak:1};
 function score(){const p=cur(),a=ans(p),k=mult(p);act().forEach(ensure);S.prev={...S.scores};S.delta={};S.last={};S.bonus={};
- act().forEach(x=>{if(isIns(x.id))return;const v=S.votes[x.id];if(v===a){S.right[x.id]++;S.streak[x.id]=(S.streak[x.id]||0)+1;const bn=S.streak[x.id]%3===0?PTS.streak:0;S.bonus[x.id]=bn;S.delta[x.id]=PTS.right*k+bn}else{S.streak[x.id]=0;S.delta[x.id]=0}});
+ act().forEach(x=>{if(isIns(x.id))return;const v=S.votes[x.id];if(v===a){S.right[x.id]++;S.streak[x.id]=(S.streak[x.id]||0)+1;S.best=S.best||{};S.best[x.id]=Math.max(S.best[x.id]||0,S.streak[x.id]);const bn=S.streak[x.id]%3===0?PTS.streak:0;S.bonus[x.id]=bn;S.delta[x.id]=PTS.right*k+bn}else{S.streak[x.id]=0;S.delta[x.id]=0}});
  const id=insOf(S.isl);if(id){const fooled=act().filter(x=>x.id!==id&&S.votes[x.id]&&S.votes[x.id]!==a).length;S.delta[id]=fooled*PTS.fool*k;S.fooled[id]=(S.fooled[id]||0)+fooled;S.last['i'+S.isl]={ins:id,fooled}}
  act().forEach(x=>S.scores[x.id]+=S.delta[x.id]||0)}
 const RH=46;
@@ -1754,7 +1786,7 @@ function animateBoard(fast){if(!fast)S.animDone=true;const later2=fast?(f=>f()):
 function advance(){clearT();S.allIn=0;S.lastTick=0;
  if(S.screen!=='game')return;
  if(S.phase==='read'){S.phase='chat';setT(DUR.chat);push();render();return}
- if(S.phase==='chat'){S.phase='vote';setT(DUR.vote);push();render();if(!LIVE)simVotes();return}
+ if(S.phase==='chat'){S.phase='vote';setT(DUR.vote);push();render();if(!LIVE&&!OFF)simVotes();return}
  if(S.phase==='vote'){score();S.phase='reveal';S.animDone=false;pushResults();push();render();return}
  if(S.round<P.length-1){S.round++;startRound()}else{if(!S.done.includes(S.isl))S.done.push(S.isl);S.screen='islandEnd';S.cheered=0;push();render()}}
 function togglePause(){if(S.paused){S.endsAt=now()+S.left;S.paused=false}else{S.left=Math.max(0,S.endsAt-now());S.paused=true}push();render()}
@@ -1768,7 +1800,8 @@ function tick(){clearInterval(tk);if(MODE!=='host'||S.screen!=='game'||!['read',
 function podium(list,sc,h=[260,330,200],cls=''){const top=[list[1],list[0],list[2]],plc=[2,1,3],col=['var(--silver)','var(--gold)','var(--bronze)'];
  return `<div class="podium ${cls}">${top.map((x,i)=>x?`<div class="pd"><div class="n">${esc(x.name)}</div><div class="s">${plural(sc[x.id]||0,'pt')} · Island ${ISLN[x.isl]}</div><div class="b" style="height:${h[i]}px;background:${col[i]};animation-delay:${[.5,1,0][i]}s">${plc[i]}</div></div>`:'<div></div>').join('')}</div>`}
 function awards(ps,n){const by=f=>ps.slice().sort((x,y)=>f(y)-f(x))[0],liar=by(x=>S.fooled[x.id]||0),det=by(x=>S.right[x.id]||0);
- return `<div class="aw"><div class="awd"><small>Best liar (most people fooled)</small><p>${liar&&S.fooled[liar.id]?esc(liar.name)+' · '+S.fooled[liar.id]:'Nobody. Honest people!'}</p></div><div class="awd k"><small>Best detective (most right answers)</small><p>${det?esc(det.name)+' · '+(S.right[det.id]||0)+' / '+n:'—'}</p></div></div>`}
+ const hot=by(x=>(S.best||{})[x.id]||0);
+ return `<div class="aw">${OFF?`<div class="awd"><small>Hot streak (most right in a row)</small><p>${hot&&(S.best||{})[hot.id]?esc(hot.name)+' · '+S.best[hot.id]:'Nobody yet'}</p></div>`:`<div class="awd"><small>Best liar (most people fooled)</small><p>${liar&&S.fooled[liar.id]?esc(liar.name)+' · '+S.fooled[liar.id]:'Nobody. Honest people!'}</p></div>`}<div class="awd k"><small>Best detective (most right answers)</small><p>${det?esc(det.name)+' · '+(S.right[det.id]||0)+' / '+n:'—'}</p></div></div>`}
 function islandEndView(){const i=S.isl,ps=act(),r=rankIn(ps,S.scores),a=ps.slice().sort((x,y)=>r[x.id]-r[y.id]),left=[0,1,2].filter(k=>!S.done.includes(k)),all=!left.length;
  return `<div class="final"><div><h1>Island ${ISLN[i]} is <em>done</em>.</h1>${podium(a,S.scores)}${awards(ps,P.length*1)}</div>
  <div class="flist"><div class="fh"><span class="dot" style="background:${ISL[i]};width:14px;height:14px"></span>Island ${ISLN[i]} ranking</div>${a.map((x,k)=>`<div class="r" style="${k<3?'background:var(--bg)':''}"><b>${k+1}</b><span>${esc(x.name)}</span><b>${S.scores[x.id]||0}</b></div>`).join('')}
@@ -1800,10 +1833,12 @@ function castVote(id,v){if(S.phase!=='vote'||S.votes[id])return;S.votes[id]=v;vo
 
 /* ---------- host: live ---------- */
 function code(){const w=['HONK','BEEP','ZOOM','BOLT','DRONE','ROBO','TURBO','PIXEL'];return w[Math.floor(Math.random()*w.length)]+'-'+(10+Math.floor(Math.random()*90))}
-function push(){if(!LIVE||!db)return;const p=cur()||P[0];
+function saveOff(){if(!OFF)return;try{const o={};['screen','isl','done','order','round','phase','votes','scores','prev','delta','fooled','right','insCount','streak','bonus','last','ins','best','left'].forEach(k=>o[k]=S[k]);if(['read','chat','vote'].includes(S.phase)&&S.screen==='game')o.left=S.paused?S.left:Math.max(0,S.endsAt-Date.now());localStorage.setItem('am-off-save',JSON.stringify(o))}catch(e){}}
+function loadOff(){try{const o=JSON.parse(localStorage.getItem('am-off-save')||'null');if(!o)return;Object.assign(S,o);if(S.screen==='game'){S.animDone=true;if(['read','chat','vote'].includes(S.phase)){S.paused=true;S.left=o.left||0}}}catch(e){}}
+function push(){saveOff();if(!LIVE||!db)return;const p=cur()||P[0];
  ref('state').set({screen:S.screen,isl:S.isl,done:S.done.length?S.done.join(','):'',order:S.order.join(','),round:S.round,n:P.length,phase:S.phase,endsAt:S.endsAt,paused:S.paused,left:S.left,ins:S.ins,key:ans(p),tip:p.tip,k:mult(p)});
  ref('stats').set({fooled:S.fooled,right:S.right,insCount:S.insCount,streak:S.streak});ref('scores').set(S.scores)}
-function pushResults(){if(!LIVE||!db)return;ref('results/'+vkey(S.isl,S.round)).set({delta:S.delta,bonus:S.bonus,last:S.last,prev:S.prev});ref('scores').set(S.scores)}
+function pushResults(){saveOff();if(!LIVE||!db)return;ref('results/'+vkey(S.isl,S.round)).set({delta:S.delta,bonus:S.bonus,last:S.last,prev:S.prev});ref('scores').set(S.scores)}
 async function startLive(){try{await fbInit()}catch(e){NETERR='Could not reach Firebase. Check the internet and the config.';LIVE=false;render();return}
  let saved='';try{saved=localStorage.getItem('am-host-room')||''}catch(e){}
  CODE=saved||code();
@@ -1823,7 +1858,7 @@ function onRoom(room){const ps=room.players||{};const before=new Set(PL.map(p=>p
  if(S.screen==='lobby'){if(idsChanged)render();return}
  if(S.screen==='game'&&S.phase==='vote'&&changed){S.votes={...nv};if(idsChanged)render();votesChanged();return}
  if(idsChanged&&S.screen!=='game')render()}
-function newGame(){clearT();if(LIVE){try{localStorage.removeItem('am-host-room')}catch(e){}}location.href=location.pathname}
+function newGame(){clearT();try{localStorage.removeItem('am-off-save')}catch(e){}if(LIVE){try{localStorage.removeItem('am-host-room')}catch(e){}}location.href=location.pathname}
 
 /* =====================================================================
    PLAYER (phone)
@@ -1864,10 +1899,10 @@ function renderPlayer(){if(!ROOM){$('#app').innerHTML=mobShell('',`<div class="b
  document.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>{const st=ROOM.state||{};if(st.screen!=='game'||st.phase!=='vote'||m.myVote||m.insider||(st.isl|0)!==m.isl)return;if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}ref('votes/v'+(st.isl|0)+'_'+st.round+'/'+PID).set(b.dataset.pv)})}
 
 /* ---------------- boot ---------------- */
-addEventListener('keydown',e=>{if(MODE!=='host'||e.target.matches('input,textarea,select'))return;SND.resume();if(e.key==='m'||e.key==='M'){SND.toggle();render();return}if(e.key==='f'||e.key==='F'){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(_){}return}
+addEventListener('keydown',e=>{if(MODE!=='host'||e.target.matches('input,textarea,select'))return;SND.resume();if(e.key==='m'||e.key==='M'){SND.toggle();render();return}if((e.key==='d'||e.key==='D')&&S.screen==='lobby'){S.dev=!S.dev;render();return}if(e.key==='f'||e.key==='F'){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(_){}return}
  if(S.screen!=='game')return;if(e.key===' '||e.key==='ArrowRight'){e.preventDefault();advance()}else if((e.key==='p'||e.key==='P')&&['read','chat','vote'].includes(S.phase))togglePause()});
 window.__S=S;window.__adv=advance;window.__render=render;window.__SND=SND;window.__PL=()=>PL;
-if(MODE==='player')startPlayer();else{render();if(LIVE)startLive();else startSim()}
+if(MODE==='player')startPlayer();else if(OFF){PL=SIMPL.map(p=>({id:p.id,name:p.name,isl:p.isl,on:true}));PL.forEach(ensure);loadOff();render()}else{render();if(LIVE)startLive();else startSim()}
 })();
 </script>
 </body>
